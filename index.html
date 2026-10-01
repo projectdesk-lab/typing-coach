@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="app">
-<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-14</span></div></header>
+<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-15</span></div></header>
 
 <main>
 <section class="view active" id="practice"><div class="grid">
@@ -290,9 +290,9 @@ function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function modeName(m){return({sentence:'文章',long:'長文',word:'単語'}[m]||m)}
 
-function aggregate(){
+function aggregate(list=sessions()){
   let C={},P={};
-  for(const s of sessions()){
+  for(const s of list){
     for(const[k,v]of Object.entries(s.cstats||{})){C[k]??={c:0,m:0,l:[]};C[k].c+=v.c||0;C[k].m+=v.m||0;C[k].l.push(...(v.l||[]))}
     for(const[k,v]of Object.entries(s.pstats||{})){P[k]??={c:0,m:0,l:[]};P[k].c+=v.c||0;P[k].m+=v.m||0;P[k].l.push(...(v.l||[]))}
   }
@@ -301,10 +301,10 @@ function aggregate(){
 function isPunctuationKey(k){return /[、。！？,.!?]/.test(k)}
 function validWeakKey(k){return typeof k==='string'&&k.length===1&&!/\s/.test(k)&&(settings().punctuation===true||!isPunctuationKey(k))}
 function validWeakPair(k){return typeof k==='string'&&k.length===2&&!/\s/.test(k)&&(settings().punctuation===true||!isPunctuationKey(k))}
-function weak(){
-  const{C,P}=aggregate();
-  const cv=Object.entries(C).filter(([k])=>validWeakKey(k)).map(([k,v])=>{let t=v.c+v.m,e=t?v.m/t:0,l=avg(v.l);return{k,t,e,l,score:e*100+Math.min(l/20,20)}}).filter(x=>x.t>=3).sort((a,b)=>b.score-a.score);
-  const pv=Object.entries(P).filter(([k])=>validWeakPair(k)).map(([k,v])=>{let t=v.c+v.m,e=t?v.m/t:0,l=avg(v.l);return{k,t,e,l,score:e*100+Math.min(l/25,18)}}).filter(x=>x.t>=2).sort((a,b)=>b.score-a.score);
+function weak(list=sessions()){
+  const{C,P}=aggregate(list);
+  const cv=Object.entries(C).filter(([k])=>validWeakKey(k)).map(([k,v])=>{let t=v.c+v.m,e=t?v.m/t:0,l=avg(v.l);return{k,t,c:v.c,m:v.m,e,l,score:e*100+Math.min(l/20,20)}}).filter(x=>x.t>=3).sort((a,b)=>b.score-a.score);
+  const pv=Object.entries(P).filter(([k])=>validWeakPair(k)).map(([k,v])=>{let t=v.c+v.m,e=t?v.m/t:0,l=avg(v.l);return{k,t,c:v.c,m:v.m,e,l,score:e*100+Math.min(l/25,18)}}).filter(x=>x.t>=2).sort((a,b)=>b.score-a.score);
   return{cv,pv}
 }
 function randomFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
@@ -324,7 +324,7 @@ function poolForMode(){
 function choose(){
   let pool=poolForMode().filter(it=>!S.recent.includes(it[0]));
   if(!pool.length)pool=poolForMode();
-  const w=weak(),cs=w.cv.slice(0,4).map(x=>x.k),ps=w.pv.slice(0,3).map(x=>x.k);
+  const recentForWeak=sessions().slice(-10),w=weak(recentForWeak.length?recentForWeak:sessions()),cs=w.cv.slice(0,4).map(x=>x.k),ps=w.pv.slice(0,3).map(x=>x.k);
   const randomOn=$('#randomMode')?$('#randomMode').checked:true;
   let chosen;
   if(randomOn||!sessions().length){
@@ -554,16 +554,16 @@ function finish(reason){
   if(S.finished||!S.started)return;S.finished=true;clearInterval(S.timer);
   let sec=(performance.now()-S.startAt)/1000,m=metric(sec),wk=Object.entries(S.cstats).map(([k,v])=>({k,r:v.m/(v.c+v.m||1),t:v.c+v.m})).filter(x=>x.t>=2).sort((a,b)=>b.r-a.r).slice(0,4).map(x=>x.k);
   let a=sessions(),best=priorBests(a),pb={wpm:m.wpm>best.wpm,accuracy:m.acc>best.accuracy,score:m.score>best.score};
-  let rec={id:Date.now()+'-'+Math.random(),at:new Date().toISOString(),mode:S.mode,jp:S.item[0],reading:S.item[1],reason,seconds:+sec.toFixed(2),readyMs:S.armedAt?Math.max(0,Math.round(S.startAt-S.armedAt)):0,wpm:+m.wpm.toFixed(2),score:Math.round(m.score),accuracy:+m.acc.toFixed(2),correct:S.correct,attempts:S.attempts,misses:S.miss,cstats:S.cstats,pstats:S.pstats,weak:wk,wpmMetric:'keys-per-minute',pb,trace:S.trace};
+  let rec={id:Date.now()+'-'+Math.random(),at:new Date().toISOString(),mode:S.mode,jp:S.item[0],reading:S.item[1],reason,seconds:+sec.toFixed(2),readyMs:S.armedAt?Math.max(0,Math.round(S.startAt-S.armedAt)):0,wpm:+m.wpm.toFixed(2),score:Math.round(m.score),accuracy:+m.acc.toFixed(2),correct:S.correct,attempts:S.attempts,misses:S.miss,cstats:S.cstats,pstats:S.pstats,weak:wk,wpmMetric:'keys-per-minute',build:'r2026.10.01-15',pb,trace:S.trace};
   a.push(rec);save(a);$('#status').textContent='記録済み';$('#stop').disabled=true;showResult(rec);refresh()
 }
 function advice(s){let t=settings().target;if(s.accuracy<90)return'速度を落として、次は正確率95%以上を優先しましょう。';if(s.accuracy<96)return'速度は保ちつつ、ミスが出た文字列だけ丁寧に通す練習がおすすめです。';if(s.wpm<t)return'正確率は十分です。次は文章の少し先を読む意識で、精度を保ったまま速度を上げましょう。';return'速度と正確率のバランスが良好です。次は長文で後半まで同じリズムを維持できるか確認しましょう。'}
 function showResult(s){document.body.classList.remove('focus');$('#focus').checked=false;const p=s.pb||{};$('#modalKpis').innerHTML=[['WPM',s.wpm.toFixed(1),p.wpm],['Score',Math.round(sessionScore(s)),p.score],['正確率',s.accuracy.toFixed(1)+'%',p.accuracy],['ミス',s.misses,false],['時間',s.seconds.toFixed(1)+'秒',false]].map(x=>'<div class="kpi"><span>'+x[0]+(x[2]?'<b class="newbest">NEW BEST</b>':'')+'</span><strong>'+x[1]+'</strong></div>').join('');const names=[p.wpm?'WPM':null,p.accuracy?'正確率':null,p.score?'Score':null].filter(Boolean);$('#bestSummary').innerHTML=names.length?'<div class="best-summary">自己ベスト更新：'+names.join('・')+'</div>':'';$('#advice').textContent=advice(s);$('#traceResult').innerHTML=renderTraceResult(s);$('#modal').classList.add('open')}
-function coach(){let a=sessions(),r=a.slice(-10),o=a.slice(-20,-10),w=weak(),rw=avg(r.map(x=>x.wpm)),ra=avg(r.map(x=>x.accuracy)),ow=avg(o.map(x=>x.wpm));return{a,r,o,w,rw,ra,ow}}
+function coach(){let a=sessions(),r=a.slice(-10),o=a.slice(-20,-10),wRecent=weak(r),wAll=weak(a),w=(wRecent.cv.length||wRecent.pv.length)?wRecent:wAll,rw=avg(r.map(x=>x.wpm)),ra=avg(r.map(x=>x.accuracy)),ow=avg(o.map(x=>x.wpm));return{a,r,o,w,wRecent,wAll,rw,ra,ow}}
 function recMode(){let c=coach(),t=settings().target;if(!c.a.length)return'sentence';if(c.ra<92)return'word';if(c.rw>=t&&c.ra>=96)return'long';return'sentence'}
 function recReason(){let c=coach(),t=settings().target;if(!c.a.length)return'まず基準値を取るため文章モードを1回。';if(c.ra<92)return'正確率を戻すため、短い単位で苦手キーを矯正します。';if(c.rw>=t&&c.ra>=96)return'目標速度と精度を満たしているため、長文の持久力を確認します。';return'文章の流れを読みながら速度と精度を同時に伸ばします。'}
 function refresh(){
-  let a=sessions(),w=weak(),c=coach(),t=settings().target;
+  let a=sessions(),c=coach(),w=c.w,t=settings().target;
   $('#topStat').textContent=a.length+'回 / Best '+(a.length?Math.max(...a.map(x=>x.wpm)).toFixed(1):'--');
   $('#weak').innerHTML=w.cv.length?w.cv.slice(0,5).map(x=>'<span class="tag">'+esc(x.k.toUpperCase())+'</span>').join(''):'<span class="muted">まだデータがありません</span>';
   $('#rec').innerHTML='<strong>'+modeName(recMode())+'モード</strong><br>'+recReason();
@@ -583,8 +583,8 @@ function chart(cv,vals,opt={}){
 }
 function renderGrowth(){
   let a=sessions(),r=S.range;if(r!=='all')a=a.slice(-Number(r));chart($('#wpmChart'),a.map(x=>x.wpm));chart($('#accChart'),a.map(x=>x.accuracy),{min:70,max:100,suffix:'%'});chart($('#scoreChart'),a.map(sessionScore));
-  let w=weak();$('#keyStats').innerHTML=w.cv.slice(0,10).map(x=>'<div class="statrow"><strong>'+esc(x.k.toUpperCase())+'</strong><div class="bar"><i style="width:'+Math.max(0,100-x.e*100)+'%"></i></div><span>ミス '+(x.e*100).toFixed(1)+'%</span></div>').join('')||'<p class="muted">記録が増えると表示されます。</p>';
-  $('#pairStats').innerHTML=w.pv.slice(0,10).map(x=>'<div class="statrow"><strong>'+esc(x.k)+'</strong><div class="bar"><i style="width:'+Math.max(0,100-x.e*100)+'%"></i></div><span>'+(x.e*100).toFixed(1)+'%</span></div>').join('')||'<p class="muted">数回練習すると表示されます。</p>';
+  let w=weak(a);$('#keyStats').innerHTML=w.cv.slice(0,10).map(x=>'<div class="statrow"><strong>'+esc(x.k.toUpperCase())+'</strong><div class="bar"><i style="width:'+Math.max(0,100-x.e*100)+'%"></i></div><span>ミス '+(x.e*100).toFixed(1)+'% ('+x.m+'/'+x.t+')</span></div>').join('')||'<p class="muted">記録が増えると表示されます。</p>';
+  $('#pairStats').innerHTML=w.pv.slice(0,10).map(x=>'<div class="statrow"><strong>'+esc(x.k)+'</strong><div class="bar"><i style="width:'+Math.max(0,100-x.e*100)+'%"></i></div><span>'+(x.e*100).toFixed(1)+'% ('+x.m+'/'+x.t+')</span></div>').join('')||'<p class="muted">数回練習すると表示されます。</p>';
   let c=coach(),trend=[];if(c.o.length)trend.push('平均WPM：'+((c.rw-c.ow)>=0?'+':'')+(c.rw-c.ow).toFixed(1));trend.push('直近正確率：'+(c.a.length?c.ra.toFixed(1)+'%':'--'));$('#trend').innerHTML=trend.map(x=>'<div class="line">'+x+'</div>').join('')
 }
 function renderCoach(){
@@ -602,7 +602,39 @@ function nav(id){if(id!=='practice'){document.body.classList.remove('focus');$('
 function toast(t){let x=$('#toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
 function download(name,text,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function exportCSV(){let head=['日時','モード','WPM','Score','正確率','ミス','秒数','正解打鍵','総打鍵','弱点キー'],rows=sessions().map(x=>[x.at,x.mode,x.wpm,Math.round(sessionScore(x)),x.accuracy,x.misses,x.seconds,x.correct,x.attempts,(x.weak||[]).join(' ')]),csv=[head,...rows].map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');download('typing-coach-history.csv','\ufeff'+csv,'text/csv;charset=utf-8')}
-function aiText(){let c=coach(),p={purpose:'タイピング練習の分析と次回練習アドバイス',recent:c.r.map(s=>({date:s.at,mode:s.mode,wpm:s.wpm,score:Math.round(sessionScore(s)),accuracy:s.accuracy,misses:s.misses,seconds:s.seconds,weak:(s.weak||[]).filter(validWeakKey)})),weakestKeys:c.w.cv.slice(0,8).map(x=>({key:x.k,errorRate:+(x.e*100).toFixed(1),avgLatencyMs:Math.round(x.l||0)})),weakestPairs:c.w.pv.slice(0,8).map(x=>({pair:x.k,errorRate:+(x.e*100).toFixed(1),avgLatencyMs:Math.round(x.l||0)})),targetWpm:settings().target};return'以下はTyping Coachの自動記録です。傾向を分析し、次に改善すべき点を優先順位つきで説明してください。具体的な練習方法も提案してください。\n\n'+JSON.stringify(p,null,2)}
+function stddev(nums){if(!nums.length)return 0;const m=avg(nums);return Math.sqrt(avg(nums.map(x=>(x-m)*(x-m))))}
+function weakExport(items,label){
+  return items.slice(0,8).map(x=>({
+    [label]:x.k,
+    attempts:x.t,
+    correct:x.c,
+    misses:x.m,
+    errorRate:+(x.e*100).toFixed(1),
+    avgLatencyMs:Math.round(x.l||0)
+  }))
+}
+function aiText(){
+  let c=coach(),recentWpm=c.r.map(s=>Number(s.wpm)||0);
+  const p={
+    purpose:'タイピング練習の分析と次回練習アドバイス',
+    note:'弱点は直近10回と全期間を分けています。attemptsが少ない項目は参考値として扱ってください。',
+    recentSummary:{
+      sessions:c.r.length,
+      avgWpm:+c.rw.toFixed(1),
+      wpmStdDev:+stddev(recentWpm).toFixed(1),
+      minWpm:recentWpm.length?+Math.min(...recentWpm).toFixed(1):null,
+      maxWpm:recentWpm.length?+Math.max(...recentWpm).toFixed(1):null,
+      avgAccuracy:+c.ra.toFixed(1)
+    },
+    recent:c.r.map(s=>({date:s.at,build:s.build||'legacy',mode:s.mode,wpm:s.wpm,score:Math.round(sessionScore(s)),accuracy:s.accuracy,misses:s.misses,seconds:s.seconds,weak:(s.weak||[]).filter(validWeakKey)})),
+    recentWeakestKeys:weakExport(c.wRecent.cv,'key'),
+    recentWeakestPairs:weakExport(c.wRecent.pv,'pair'),
+    allTimeWeakestKeys:weakExport(c.wAll.cv,'key'),
+    allTimeWeakestPairs:weakExport(c.wAll.pv,'pair'),
+    targetWpm:settings().target
+  };
+  return'以下はTyping Coachの自動記録です。傾向を分析し、次に改善すべき点を優先順位つきで説明してください。サンプル数の少ない弱点を過大評価せず、直近10回と全期間を区別してください。具体的な練習方法も提案してください。\n\n'+JSON.stringify(p,null,2)
+}
 async function copyAI(){let txt=aiText();try{await navigator.clipboard.writeText(txt);toast('ChatGPT用データをコピーしました')}catch{let ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('ChatGPT用データをコピーしました')}}
 function applySettings(){let s=settings();$('#showJP').checked=s.showJP;$('#showLive').checked=s.showLive;$('#sound').checked=s.sound;$('#target').value=s.target;if($('#randomMode'))$('#randomMode').checked=s.random!==false;if($('#furigana'))$('#furigana').checked=s.furigana!==false;if($('#punctuation'))$('#punctuation').checked=s.punctuation===true;$('#live').style.display=s.showLive?'grid':'none';render()}
 function saveSettings(){localStorage.setItem(SK,JSON.stringify({showJP:$('#showJP').checked,showLive:$('#showLive').checked,sound:$('#sound').checked,target:Number($('#target').value)||300,random:$('#randomMode')?$('#randomMode').checked:true,furigana:$('#furigana')?$('#furigana').checked:true,punctuation:$('#punctuation')?$('#punctuation').checked:false,wpmMetric:'keys-per-minute'}));applySettings();refresh()}
