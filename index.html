@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="app">
-<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-7</span></div></header>
+<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-8</span></div></header>
 
 <main>
 <section class="view active" id="practice"><div class="grid">
@@ -436,7 +436,7 @@ function finish(reason){
   let a=sessions();a.push(rec);save(a);$('#status').textContent='記録済み';$('#stop').disabled=true;showResult(rec);refresh()
 }
 function advice(s){let t=settings().target;if(s.accuracy<90)return'速度を落として、次は正確率95%以上を優先しましょう。';if(s.accuracy<96)return'速度は保ちつつ、ミスが出た文字列だけ丁寧に通す練習がおすすめです。';if(s.wpm<t)return'正確率は十分です。次は文章の少し先を読む意識で、精度を保ったまま速度を上げましょう。';return'速度と正確率のバランスが良好です。次は長文で後半まで同じリズムを維持できるか確認しましょう。'}
-function showResult(s){$('#modalKpis').innerHTML=[['WPM',s.wpm.toFixed(1)],['Score',Math.round(sessionScore(s))],['正確率',s.accuracy.toFixed(1)+'%'],['ミス',s.misses],['時間',s.seconds.toFixed(1)+'秒']].map(x=>'<div class="kpi"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></div>').join('');$('#advice').textContent=advice(s);$('#modal').classList.add('open')}
+function showResult(s){document.body.classList.remove('focus');$('#focus').checked=false;$('#modalKpis').innerHTML=[['WPM',s.wpm.toFixed(1)],['Score',Math.round(sessionScore(s))],['正確率',s.accuracy.toFixed(1)+'%'],['ミス',s.misses],['時間',s.seconds.toFixed(1)+'秒']].map(x=>'<div class="kpi"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></div>').join('');$('#advice').textContent=advice(s);$('#modal').classList.add('open')}
 function coach(){let a=sessions(),r=a.slice(-10),o=a.slice(-20,-10),w=weak(),rw=avg(r.map(x=>x.wpm)),ra=avg(r.map(x=>x.accuracy)),ow=avg(o.map(x=>x.wpm));return{a,r,o,w,rw,ra,ow}}
 function recMode(){let c=coach(),t=settings().target;if(!c.a.length)return'sentence';if(c.ra<92)return'word';if(c.rw>=t&&c.ra>=96)return'long';return'sentence'}
 function recReason(){let c=coach(),t=settings().target;if(!c.a.length)return'まず基準値を取るため文章モードを1回。';if(c.ra<92)return'正確率を戻すため、短い単位で苦手キーを矯正します。';if(c.rw>=t&&c.ra>=96)return'目標速度と精度を満たしているため、長文の持久力を確認します。';return'文章の流れを読みながら速度と精度を同時に伸ばします。'}
@@ -476,7 +476,7 @@ function setMode(m){
   let v={sentence:['文章練習','毎回ランダムな文章を読み、自然なリズムで入力します。'],long:['長文練習','ランダムに組み合わせた長文で、後半の安定性も確認します。'],word:['単語集中','複数ローマ字入力に対応した短い単位で弱点を矯正します。']}[m];
   $('#title').textContent=v[0];$('#hint').textContent=v[1];reset(true)
 }
-function nav(id){$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.nav===id));if(id==='growth')renderGrowth();if(id==='coach')renderCoach();if(id==='history')renderHistory()}
+function nav(id){if(id!=='practice'){document.body.classList.remove('focus');$('#focus').checked=false}$('.view').forEach(v=>v.classList.toggle('active',v.id===id));$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.nav===id));if(id==='growth')renderGrowth();if(id==='coach')renderCoach();if(id==='history')renderHistory()}
 function toast(t){let x=$('#toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
 function download(name,text,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function exportCSV(){let head=['日時','モード','WPM','Score','正確率','ミス','秒数','正解打鍵','総打鍵','弱点キー'],rows=sessions().map(x=>[x.at,x.mode,x.wpm,Math.round(sessionScore(x)),x.accuracy,x.misses,x.seconds,x.correct,x.attempts,(x.weak||[]).join(' ')]),csv=[head,...rows].map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');download('typing-coach-history.csv','\ufeff'+csv,'text/csv;charset=utf-8')}
