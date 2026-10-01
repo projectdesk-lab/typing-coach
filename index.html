@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="app">
-<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-3</span></div></header>
+<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-4</span></div></header>
 
 <main>
 <section class="view active" id="practice"><div class="grid">
@@ -21,7 +21,7 @@
 <div class="chips"><button class="chip active" data-mode="sentence">文章</button><button class="chip" data-mode="long">長文</button><button class="chip" data-mode="word">単語集中</button></div>
 <div class="row"><label>終了条件 <select id="endType"><option value="60" selected>60秒</option><option value="120">120秒</option><option value="300">5分</option><option value="endless">エンドレス（手動終了）</option><option value="passage">1文章を打ち切る</option></select></label><label><input id="focus" type="checkbox"> 集中モード</label><label><input id="randomMode" type="checkbox" checked> ランダム出題</label><button class="ghost" id="change">別の問題</button></div>
 <div class="stage" id="stage" tabindex="0"><div class="jp" id="jp"></div><div class="roma" id="roma"></div><div class="note" id="startNote">ここをクリック。日本語文章はスペースなしで入力し、最初のキー入力から計測します。</div><div class="flash" id="flash"></div></div>
-<div class="live" id="live"><div class="metric"><span>WPM</span><strong id="wpm">0.0</strong></div><div class="metric"><span>正確率</span><strong id="acc">100%</strong></div><div class="metric"><span>ミス</span><strong id="miss">0</strong></div><div class="metric"><span>経過</span><strong id="time">0.0秒</strong></div></div>
+<div class="live" id="live"><div class="metric"><span>WPM <small style="font-weight:700">(5打鍵=1)</small></span><strong id="wpm">0.0</strong></div><div class="metric"><span>正確率</span><strong id="acc">100%</strong></div><div class="metric"><span>ミス</span><strong id="miss">0</strong></div><div class="metric"><span>経過</span><strong id="time">0.0秒</strong></div></div>
 <div class="actions"><button class="btn" id="start">練習を開始</button><button class="ghost" id="stop" disabled>終了して記録</button></div></section>
 <aside class="card side"><p class="eyebrow">TODAY</p><h2>今日のおすすめ</h2><div class="box" id="rec"></div><hr><h3>現在の弱点</h3><div class="tags" id="weak"></div><h3 style="margin-top:22px">直近の目標</h3><div class="box" id="goal"></div></aside>
 </div></section>
@@ -277,36 +277,63 @@ function suggestion(){
   if(t.preferred.startsWith(S.prefix)&&t.preferred.length>S.prefix.length)return t.preferred;
   return(longer[0]||c[0]||t.preferred);
 }
-function splitGuideChunks(s){
-  const out=[];let buf='';
-  for(const ch of [...s]){
-    if('、。！？,.!?'.includes(ch)){if(buf){out.push(buf);buf=''}out.push(ch)}
-    else buf+=ch;
+function isGuideLiteral(ch){
+  const n=hira(ch);
+  return /^[ぁ-ゖー、。！？,.!?]$/.test(n);
+}
+function distributeGuideRange(map,indexes,start,end){
+  const n=indexes.length;if(!n)return;
+  const span=Math.max(0,end-start);
+  for(let i=0;i<n;i++){
+    const a=Math.round(start+span*i/n);
+    const b=Math.round(start+span*(i+1)/n);
+    map[indexes[i]]={start:a,end:Math.max(a,b)};
   }
-  if(buf)out.push(buf);
-  return out;
+}
+function alignSurfaceToReading(surface,reading){
+  const chars=[...surface],r=hira(reading).replace(/\s+/g,'');
+  const map=Array(chars.length).fill(null);
+  let rp=0,pending=[],i=0;
+  while(i<chars.length){
+    if(!isGuideLiteral(chars[i])){pending.push(i);i++;continue}
+    const idxs=[],norm=[];
+    while(i<chars.length&&isGuideLiteral(chars[i])){
+      idxs.push(i);norm.push(hira(chars[i]));i++;
+    }
+    const needle=norm.join('');
+    let found=r.indexOf(needle,rp);
+    if(found<0)found=rp;
+    distributeGuideRange(map,pending,rp,found);pending=[];
+    for(let j=0;j<idxs.length;j++)map[idxs[j]]={start:found+j,end:found+j+1};
+    rp=Math.min(r.length,found+needle.length);
+  }
+  distributeGuideRange(map,pending,rp,r.length);
+  let last=0;
+  for(let j=0;j<map.length;j++){
+    if(!map[j])map[j]={start:last,end:last};
+    last=Math.max(last,map[j].end);
+  }
+  return map;
+}
+function tokenReadingSpan(tokens,index){
+  let pos=0;
+  for(let i=0;i<tokens.length;i++){
+    const len=[...tokens[i].kana].length;
+    if(i===index)return{start:pos,end:pos+len};
+    pos+=len;
+  }
+  return{start:pos,end:pos};
 }
 function renderJapaneseProgress(){
-  const surface=splitGuideChunks(S.item[0]),reading=splitGuideChunks(hira(S.item[1]).replace(/\\s+/g,''));
-  let globalStart=0,html='';
-  for(let i=0;i<surface.length;i++){
-    const s=surface[i],r=reading[i]??'',count=buildTokens(r).length,chars=[...s];
-    if(!count){html+='<span class="jp-pending">'+esc(s)+'</span>';continue}
-    const local=S.ti-globalStart;
-    if(local>=count){
-      html+='<span class="jp-done">'+esc(s)+'</span>';
-    }else if(local<0){
-      html+='<span class="jp-pending">'+esc(s)+'</span>';
-    }else{
-      const doneChars=Math.min(chars.length-1,Math.floor((local/count)*chars.length));
-      const before=chars.slice(0,doneChars).join('');
-      const current=chars[doneChars]??'';
-      const after=chars.slice(doneChars+1).join('');
-      html+=(before?'<span class="jp-done">'+esc(before)+'</span>':'')+
-            (current?'<span class="jp-cur">'+esc(current)+'</span>':'')+
-            (after?'<span class="jp-pending">'+esc(after)+'</span>':'');
-    }
-    globalStart+=count;
+  const chars=[...S.item[0]],map=alignSurfaceToReading(S.item[0],S.item[1]);
+  const cur=tokenReadingSpan(S.tokens,S.ti);
+  let html='';
+  for(let i=0;i<chars.length;i++){
+    const m=map[i];
+    let cls='jp-pending';
+    if(S.ti>=S.tokens.length||m.end<=cur.start)cls='jp-done';
+    else if(m.start<cur.end&&m.end>cur.start)cls='jp-cur';
+    html+='<span class="'+cls+'">'+esc(chars[i])+'</span>';
   }
   $('#jp').innerHTML=html;
 }
