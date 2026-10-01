@@ -779,22 +779,13 @@ function romajiSelfTest(){
   ];
   const failedPositive=positives.filter(([r,i])=>!streamAcceptsReading(r,i));
   const failedNegative=negatives.filter(([r,i])=>streamAcceptsReading(r,i));
-  const el=$('#engineStatus');
-  const total=positives.length+negatives.length;
   if(failedPositive.length||failedNegative.length){
-    const details=[
-      ...failedPositive.slice(0,8).map(x=>'NG '+x.join('=')),
-      ...failedNegative.slice(0,8).map(x=>'誤受理 '+x.join('='))
-    ];
-    if(el){el.textContent='ローマ字判定セルフテスト失敗 ('+(failedPositive.length+failedNegative.length)+'件): '+details.join(', ');el.style.color='#e04c59'}
     console.error('Romaji self test failed',{failedPositive,failedNegative});
     return false;
   }
-  if(el){el.textContent='ローマ字判定セルフテスト '+total+'件 PASS';el.style.color='#13a36a'}
   return true;
 }
 applySettings();setMode('sentence');refresh();romajiSelfTest();
 
 </script>
-<!-- deploy-trigger r2026.10.01-12 -->
 </body></html>
