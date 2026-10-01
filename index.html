@@ -13,11 +13,11 @@
 </head>
 <body>
 <div class="app">
-<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-13</span></div></header>
+<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-14</span></div></header>
 
 <main>
 <section class="view active" id="practice"><div class="grid">
-<section class="card"><div class="head"><div><p class="eyebrow">PRACTICE</p><h1 id="title">文章練習</h1><p class="muted" id="hint">文章を読みながら、止まらず自然なリズムで入力します。</p></div><div class="pill" id="status">準備OK</div></div>
+<section class="card"><div class="head"><div><p class="eyebrow">PRACTICE</p><h1 id="title">文章練習</h1><p class="muted" id="hint">短い1文をテンポよく繰り返し、自然なリズムで入力します。</p></div><div class="pill" id="status">準備OK</div></div>
 <div class="chips"><button class="chip active" data-mode="sentence">文章</button><button class="chip" data-mode="long">長文</button><button class="chip" data-mode="word">単語集中</button></div>
 <div class="row"><label>終了条件 <select id="endType"><option value="60" selected>60秒</option><option value="120">120秒</option><option value="300">5分</option><option value="endless">エンドレス（手動終了）</option><option value="passage">1文章を打ち切る</option></select></label><label><input id="focus" type="checkbox"> 集中モード</label><label><input id="furigana" type="checkbox" checked> ふりがな</label><label><input id="punctuation" type="checkbox"> 句読点</label><label><input id="randomMode" type="checkbox" checked> ランダム出題</label><button class="ghost" id="change">別の問題</button></div>
 <div class="stage" id="stage" tabindex="0"><div class="jp" id="jp"></div><div class="roma" id="roma"></div><div class="note" id="startNote">ここをクリック。日本語文章はスペースなしで入力し、最初のキー入力から計測します。</div><div class="flash" id="flash"></div></div>
@@ -107,6 +107,55 @@ const WORDS=[
 ['チャレンジ','ちゃれんじ'],['トレーニング','とれーにんぐ'],['プロジェクト','ぷろじぇくと'],['コンピュータ','こんぴゅーた'],['キーボード','きーぼーど'],
 ['しゃっくり','しゃっくり'],['ちょっと','ちょっと'],['つづける','つづける'],['しゅうりょう','しゅうりょう'],['じゅうよう','じゅうよう']
 ];
+
+const SHORT_HEADS=[
+['タイピングでは、','たいぴんぐでは、'],
+['練習中は、','れんしゅうちゅうは、'],
+['文章を打つときは、','ぶんしょうをうつときは、'],
+['短い文でも、','みじかいぶんでも、'],
+['初めて見る文では、','はじめてみるぶんでは、'],
+['ミスした後も、','みすしたあとも、'],
+['速度を上げるときほど、','そくどをあげるときほど、'],
+['長く練習するときも、','ながくれんしゅうするときも、'],
+['調子が良い日ほど、','ちょうしがよいひほど、'],
+['苦手な文字列では、','にがてなもじれつでは、'],
+['集中したいときは、','しゅうちゅうしたいときは、'],
+['疲れているときは、','つかれているときは、']
+];
+const SHORT_TAILS=[
+['正確さを意識します。','せいかくさをいしきします。'],
+['一定のリズムを保ちます。','いっていのりずむをたもちます。'],
+['少し先の文字を見ます。','すこしさきのもじをみます。'],
+['焦らず指を動かします。','あせらずゆびをうごかします。'],
+['手元を見すぎないようにします。','てもとをみすぎないようにします。'],
+['最後まで同じ速さを意識します。','さいごまでおなじはやさをいしきします。'],
+['入力のテンポをできるだけ揃えます。','にゅうりょくのてんぽをできるだけそろえます。'],
+['指の力を抜いて打ちます。','ゆびのちからをぬいてうちます。'],
+['次の文字を早めに目で追います。','つぎのもじをはやめにめでおいます。'],
+['一つのミスを引きずらないようにします。','ひとつのみすをひきずらないようにします。'],
+['正しい指の位置を意識します。','ただしいゆびのいちをいしきします。'],
+['小さなミスを減らしていきます。','ちいさなみすをへらしていきます。']
+];
+const SHORT_FIXED=[
+['今日は正確さを優先して入力します。','きょうはせいかくさをゆうせんしてにゅうりょくします。'],
+['少し先の文字を見ながら打ちます。','すこしさきのもじをみながらうちます。'],
+['速さより一定のリズムを意識します。','はやさよりいっていのりずむをいしきします。'],
+['ミスの後も慌てずに続けます。','みすのあともあわてずにつづけます。'],
+['一文字ずつ確実に入力します。','ひともじずつかくじつににゅうりょくします。'],
+['文章全体の流れを意識します。','ぶんしょうぜんたいのながれをいしきします。'],
+['指が止まる場所を確認します。','ゆびがとまるばしょをかくにんします。'],
+['難しい文字列ほど落ち着いて打ちます。','むずかしいもじれつほどおちついてうちます。'],
+['正確率を保ったまま速度を上げます。','せいかくりつをたもったままそくどをあげます。'],
+['初めて見る文章を自然に追います。','はじめてみるぶんしょうをしぜんにおいます。'],
+['入力のテンポをできるだけ揃えます。','にゅうりょくのてんぽをできるだけそろえます。'],
+['自己ベストより安定した入力を目指します。','じこべすとよりあんていしたにゅうりょくをめざします。']
+];
+function buildShortSentencePool(){
+  const out=[...SHORT_FIXED];
+  for(const h of SHORT_HEADS)for(const t of SHORT_TAILS)out.push([h[0]+t[0],h[1]+t[1]]);
+  return out;
+}
+const SHORT_SENTENCE_POOL=buildShortSentencePool();
 
 function buildSentencePool(){
   const out=[...FIXED_SENTENCES];
@@ -262,7 +311,7 @@ function randomFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
 function makeLong(){
   const picked=[],used=new Set();
   while(picked.length<3){
-    const it=randomFrom(SENTENCE_POOL);
+    const it=randomFrom(SHORT_SENTENCE_POOL);
     if(!used.has(it[0])){picked.push(it);used.add(it[0])}
   }
   return[picked.map(x=>x[0]).join(''),picked.map(x=>x[1]).join('')];
@@ -270,7 +319,7 @@ function makeLong(){
 function poolForMode(){
   if(S.mode==='word')return WORDS;
   if(S.mode==='long')return Array.from({length:40},()=>makeLong());
-  return SENTENCE_POOL;
+  return SHORT_SENTENCE_POOL;
 }
 function choose(){
   let pool=poolForMode().filter(it=>!S.recent.includes(it[0]));
@@ -546,7 +595,7 @@ function renderCoach(){
 }
 function setMode(m){
   S.mode=m;$$('.chip').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));
-  let v={sentence:['文章練習','毎回ランダムな文章を読み、自然なリズムで入力します。'],long:['長文練習','ランダムに組み合わせた長文で、後半の安定性も確認します。'],word:['単語集中','複数ローマ字入力に対応した短い単位で弱点を矯正します。']}[m];
+  let v={sentence:['文章練習','20〜35文字前後の短い1文をテンポよく繰り返します。'],long:['長文練習','短い文を3文つないだ長文で、後半の安定性も確認します。'],word:['単語集中','複数ローマ字入力に対応した短い単位で弱点を矯正します。']}[m];
   $('#title').textContent=v[0];$('#hint').textContent=v[1];reset(true)
 }
 function nav(id){if(id!=='practice'){document.body.classList.remove('focus');$('#focus').checked=false}document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.nav===id));if(id==='growth')renderGrowth();if(id==='coach')renderCoach();if(id==='history')renderHistory()}
