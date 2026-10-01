@@ -424,21 +424,21 @@ function finalizeToken(){
   return'continue'
 }
 function tryKey(k){
-  const t=currentToken();if(!t)return{ok:false,ti:S.ti};
-  const here=S.ti;
+  const t=currentToken();if(!t)return{ok:false,ti:S.ti,trace:S.traceCurrent};
+  const here=S.ti,trace=S.traceCurrent;
   let ext=t.options.filter(o=>o.startsWith(S.prefix+k));
   if(ext.length){
     S.prefix+=k;
     const exact=t.options.includes(S.prefix),longer=t.options.some(o=>o.startsWith(S.prefix)&&o.length>S.prefix.length);
     if(exact&&!longer)finalizeToken();
-    return{ok:true,ti:here};
+    return{ok:true,ti:here,trace};
   }
   if(t.options.includes(S.prefix)){
     const r=finalizeToken();
-    if(r==='finished')return{ok:false,ti:here};
+    if(r==='finished')return{ok:false,ti:here,trace};
     return tryKey(k);
   }
-  return{ok:false,ti:here};
+  return{ok:false,ti:here,trace};
 }
 function keydown(e){
   if(['INPUT','SELECT','BUTTON'].includes(document.activeElement?.tagName))return;
@@ -452,13 +452,13 @@ function keydown(e){
     S.correct++;
     const c=st(S.cstats,k);c.c++;
     let lat=now-S.lastAt;if(lat<3000)c.l.push(Math.round(lat));
-    const tt=S.traceCurrent?.tokens?.[res.ti];
+    const tt=res.trace?.tokens?.[res.ti];
     if(tt){tt.keys++;if(lat<3000){tt.totalLatency+=Math.round(lat);tt.maxLatency=Math.max(tt.maxLatency,Math.round(lat))}}
     if(S.lastKey){const p=st(S.pstats,S.lastKey+k);p.c++;if(lat<3000)p.l.push(Math.round(lat))}
     S.lastKey=k;S.lastAt=now;render()
   }else{
     S.miss++;st(S.cstats,expected).m++;if(S.lastKey)st(S.pstats,S.lastKey+expected).m++;
-    const tt=S.traceCurrent?.tokens?.[res.ti];if(tt)tt.misses++;
+    const tt=res.trace?.tokens?.[res.ti];if(tt)tt.misses++;
     flash();beep()
   }
   live((now-S.startAt)/1000)
