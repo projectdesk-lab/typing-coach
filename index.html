@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="app">
-<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-15</span></div></header>
+<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-16</span></div></header>
 
 <main>
 <section class="view active" id="practice"><div class="grid">
@@ -32,7 +32,7 @@
 
 <section class="view" id="coach"><div class="two"><section class="card span2"><p class="eyebrow">COACH</p><h1>自動コーチ</h1><div class="coach" id="coachText"></div><div class="actions" style="margin-top:16px"><button class="btn" id="coachStart">おすすめ練習を始める</button><button class="ghost" id="copy">ChatGPT用データをコピー</button></div></section><section class="card"><h2>次の練習</h2><div id="plan"></div></section><section class="card"><h2>伸びている点</h2><div id="strength"></div></section><section class="card"><h2>注意する点</h2><div id="risk"></div></section><section class="card"><h2>分析対象</h2><p class="muted">直近10回を中心に、その前の10回と比較します。キー別・2文字連続のミス率と入力間隔も使います。</p></section></div></section>
 
-<section class="view" id="settings"><div class="two"><section class="card span2"><p class="eyebrow">SETTINGS</p><h1>設定</h1><label class="setting"><span><strong>日本語文を表示</strong><small>ローマ字の上に元の文章を表示します。</small></span><input type="checkbox" id="showJP" checked></label><label class="setting"><span><strong>練習中の数値を表示</strong><small>WPM・正確率・ミス数を表示します。</small></span><input type="checkbox" id="showLive" checked></label><label class="setting"><span><strong>ミス音</strong><small>誤入力した瞬間に短い音を鳴らします。</small></span><input type="checkbox" id="sound"></label><label class="setting"><span><strong>目標WPM</strong><small>自動コーチの基準に使います。</small></span><input type="number" id="target" min="50" max="1000" step="10" value="300"></label></section><section class="card"><h2>データ</h2><div class="stack"><button class="ghost" id="backup">バックアップ(JSON)</button><label class="ghost" style="text-align:center;cursor:pointer">バックアップを復元<input type="file" id="restore" accept="application/json" hidden></label><button class="danger" id="reset">全履歴を削除</button></div></section><section class="card"><h2>AI連携</h2><p class="muted">今は追加料金なしの自動コーチで完結します。公開サービス化するときは、APIキーをブラウザに置かずサーバー側からAI APIを接続する想定です。</p></section></div></section>
+<section class="view" id="settings"><div class="two"><section class="card span2"><p class="eyebrow">SETTINGS</p><h1>設定</h1><label class="setting"><span><strong>日本語文を表示</strong><small>ローマ字の上に元の文章を表示します。</small></span><input type="checkbox" id="showJP" checked></label><label class="setting"><span><strong>練習中の数値を表示</strong><small>WPM・正確率・ミス数を表示します。</small></span><input type="checkbox" id="showLive" checked></label><label class="setting"><span><strong>ミス音</strong><small>誤入力した瞬間に短い音を鳴らします。</small></span><input type="checkbox" id="sound"></label><label class="setting"><span><strong>目標WPM</strong><small>自動コーチの基準に使います。</small></span><input type="number" id="target" min="50" max="1000" step="10" value="300"></label></section><section class="card"><h2>データ</h2><div class="stack"><button class="ghost" id="backup">バックアップ(JSON)</button><label class="ghost" style="text-align:center;cursor:pointer">バックアップを復元<input type="file" id="restore" accept="application/json" hidden></label><button class="danger" id="reset">全履歴を削除</button></div></section><section class="card"><h2>AI連携</h2><p class="muted">今は追加料金なしの自動コーチで完結します。公開サービス化するときは、APIキーをブラウザに置かずサーバー側からAI APIを接続する想定です。</p></section><section class="card"><h2>入力エンジン</h2><p id="engineStatus" class="muted">ローマ字判定を確認中…</p><p class="muted">清音・濁音・拗音・小文字・促音・撥音・外来音・全問題文を自動テストします。</p></section></div></section>
 </main>
 </div>
 <div class="modal" id="modal"><div class="modal-card"><p class="eyebrow">SESSION COMPLETE</p><h2>練習結果</h2><div class="modal-kpis" id="modalKpis"></div><div id="bestSummary"></div><div class="advice" id="advice"></div><div id="traceResult"></div><div class="actions" style="margin-top:16px"><button class="btn" id="next">次のおすすめを練習</button><button class="ghost" id="result">結果を見る</button></div></div></div><div class="toast" id="toast"></div>
@@ -169,9 +169,9 @@ const SENTENCE_POOL=buildSentencePool();
 
 const SIMPLE={
 'あ':['a'],'い':['i'],'う':['u'],'え':['e'],'お':['o'],
-'か':['ka'],'き':['ki'],'く':['ku'],'け':['ke'],'こ':['ko'],
+'か':['ka','ca'],'き':['ki'],'く':['ku','cu','qu'],'け':['ke'],'こ':['ko','co'],
 'が':['ga'],'ぎ':['gi'],'ぐ':['gu'],'げ':['ge'],'ご':['go'],
-'さ':['sa'],'し':['si','shi'],'す':['su'],'せ':['se'],'そ':['so'],
+'さ':['sa'],'し':['si','shi','ci'],'す':['su'],'せ':['se','ce'],'そ':['so'],
 'ざ':['za'],'じ':['zi','ji'],'ず':['zu'],'ぜ':['ze'],'ぞ':['zo'],
 'た':['ta'],'ち':['ti','chi'],'つ':['tu','tsu'],'て':['te'],'と':['to'],
 'だ':['da'],'ぢ':['di','ji'],'づ':['du','zu'],'で':['de'],'ど':['do'],
@@ -189,21 +189,23 @@ const SIMPLE={
 'ー':['-'],'、':[','],'。':['.'],'！':['!'],'？':['?']
 };
 const DIG={
-'きゃ':['kya','kixya','kilya'],'きゅ':['kyu','kixyu','kilyu'],'きょ':['kyo','kixyo','kilyo'],
-'ぎゃ':['gya','gixya','gilya'],'ぎゅ':['gyu','gixyu','gilyu'],'ぎょ':['gyo','gixyo','gilyo'],
-'しゃ':['sya','sha','sixya','silya'],'しゅ':['syu','shu','sixyu','silyu'],'しょ':['syo','sho','sixyo','silyo'],'しぇ':['sye','she','sixe','sile'],
+'きゃ':['kya','kixya','kilya'],'きぃ':['kyi','kixi','kili'],'きゅ':['kyu','kixyu','kilyu'],'きぇ':['kye','kixe','kile'],'きょ':['kyo','kixyo','kilyo'],
+'ぎゃ':['gya','gixya','gilya'],'ぎぃ':['gyi','gixi','gili'],'ぎゅ':['gyu','gixyu','gilyu'],'ぎぇ':['gye','gixe','gile'],'ぎょ':['gyo','gixyo','gilyo'],
+'しゃ':['sya','sha','sixya','silya'],'しぃ':['syi','sixi','sili'],'しゅ':['syu','shu','sixyu','silyu'],'しぇ':['sye','she','sixe','sile'],'しょ':['syo','sho','sixyo','silyo'],
 'じゃ':['zya','ja','jya','zixya','zilya'],'じゅ':['zyu','ju','jyu','zixyu','zilyu'],'じょ':['zyo','jo','jyo','zixyo','zilyo'],'じぇ':['zye','je','jye','zixe','zile','jixe','jile'],
 'ちゃ':['tya','cha','cya','chya','tixya','tilya'],'ちゅ':['tyu','chu','cyu','chyu','tixyu','tilyu'],'ちょ':['tyo','cho','cyo','chyo','tixyo','tilyo'],'ちぇ':['tye','che','cye','chye','tixe','tile'],
 'ぢゃ':['dya','jya','ja','dixya','dilya'],'ぢゅ':['dyu','jyu','ju','dixyu','dilyu'],'ぢょ':['dyo','jyo','jo','dixyo','dilyo'],
-'にゃ':['nya','nixya','nilya'],'にゅ':['nyu','nixyu','nilyu'],'にょ':['nyo','nixyo','nilyo'],
-'ひゃ':['hya','hixya','hilya'],'ひゅ':['hyu','hixyu','hilyu'],'ひょ':['hyo','hixyo','hilyo'],
+'にゃ':['nya','nixya','nilya'],'にぃ':['nyi','nixi','nili'],'にゅ':['nyu','nixyu','nilyu'],'にぇ':['nye','nixe','nile'],'にょ':['nyo','nixyo','nilyo'],
+'ひゃ':['hya','hixya','hilya'],'ひぃ':['hyi','hixi','hili'],'ひゅ':['hyu','hixyu','hilyu'],'ひぇ':['hye','hixe','hile'],'ひょ':['hyo','hixyo','hilyo'],
 'びゃ':['bya','bixya','bilya'],'びゅ':['byu','bixyu','bilyu'],'びょ':['byo','bixyo','bilyo'],
 'ぴゃ':['pya','pixya','pilya'],'ぴゅ':['pyu','pixyu','pilyu'],'ぴょ':['pyo','pixyo','pilyo'],
-'みゃ':['mya','mixya','milya'],'みゅ':['myu','mixyu','milyu'],'みょ':['myo','mixyo','milyo'],
-'りゃ':['rya','rixya','rilya'],'りゅ':['ryu','rixyu','rilyu'],'りょ':['ryo','rixyo','rilyo'],
+'みゃ':['mya','mixya','milya'],'みぃ':['myi','mixi','mili'],'みゅ':['myu','mixyu','milyu'],'みぇ':['mye','mixe','mile'],'みょ':['myo','mixyo','milyo'],
+'りゃ':['rya','rixya','rilya'],'りぃ':['ryi','rixi','rili'],'りゅ':['ryu','rixyu','rilyu'],'りぇ':['rye','rixe','rile'],'りょ':['ryo','rixyo','rilyo'],
 'ふぁ':['fa','fuxa','fula','huxa','hula'],'ふぃ':['fi','fuxi','fuli','huxi','huli'],'ふぇ':['fe','fuxe','fule','huxe','hule'],'ふぉ':['fo','fuxo','fulo','huxo','hulo'],
-'うぃ':['wi','uxi','uli'],'うぇ':['we','uxe','ule'],'うぉ':['who','uxo','ulo'],
-'てぃ':['thi','texi','teli'],'でぃ':['dhi','dexi','deli'],
+'ふゃ':['fya','fuxya','fulya'],'ふゅ':['fyu','fuxyu','fulyu'],'ふょ':['fyo','fuxyo','fulyo'],
+'うぁ':['wha','uxa','ula'],'うぃ':['wi','whi','uxi','uli'],'うぇ':['we','whe','uxe','ule'],'うぉ':['who','uxo','ulo'],
+'てゃ':['tha','texya','telya'],'てぃ':['thi','texi','teli'],'てゅ':['thu','texyu','telyu'],'てぇ':['the','texe','tele'],'てょ':['tho','texyo','telyo'],
+'でゃ':['dha','dexya','delya'],'でぃ':['dhi','dexi','deli'],'でゅ':['dhu','dexyu','delyu'],'でぇ':['dhe','dexe','dele'],'でょ':['dho','dexyo','delyo'],
 'とぅ':['twu','toxu','tolu'],'どぅ':['dwu','doxu','dolu'],
 'つぁ':['tsa','tuxa','tula'],'つぃ':['tsi','tuxi','tuli'],'つぇ':['tse','tuxe','tule'],'つぉ':['tso','tuxo','tulo'],
 'くぁ':['qa','kwa','kuxa','kula'],'くぃ':['qi','kwi','kuxi','kuli'],'くぇ':['qe','kwe','kuxe','kule'],'くぉ':['qo','kwo','kuxo','kulo'],
@@ -245,8 +247,8 @@ function buildTokens(reading){
     }
     if(t.n){
       const nextKana=next?hira(next.kana||''):'';
-      const ambiguous=/^[あいうえおやゆよ]/.test(nextKana);
-      t.options=ambiguous?['nn',"n'",'xn']:['n','nn',"n'",'xn'];
+      const needsExplicit=!next||/^[あいうえおなにぬねのやゆよん]/.test(nextKana);
+      t.options=needsExplicit?['nn','xn',"n'"]:['n','nn','xn',"n'"];
     }
     t.options=[...new Set(t.options)];
     t.preferred=t.options[0];
@@ -554,7 +556,7 @@ function finish(reason){
   if(S.finished||!S.started)return;S.finished=true;clearInterval(S.timer);
   let sec=(performance.now()-S.startAt)/1000,m=metric(sec),wk=Object.entries(S.cstats).map(([k,v])=>({k,r:v.m/(v.c+v.m||1),t:v.c+v.m})).filter(x=>x.t>=2).sort((a,b)=>b.r-a.r).slice(0,4).map(x=>x.k);
   let a=sessions(),best=priorBests(a),pb={wpm:m.wpm>best.wpm,accuracy:m.acc>best.accuracy,score:m.score>best.score};
-  let rec={id:Date.now()+'-'+Math.random(),at:new Date().toISOString(),mode:S.mode,jp:S.item[0],reading:S.item[1],reason,seconds:+sec.toFixed(2),readyMs:S.armedAt?Math.max(0,Math.round(S.startAt-S.armedAt)):0,wpm:+m.wpm.toFixed(2),score:Math.round(m.score),accuracy:+m.acc.toFixed(2),correct:S.correct,attempts:S.attempts,misses:S.miss,cstats:S.cstats,pstats:S.pstats,weak:wk,wpmMetric:'keys-per-minute',build:'r2026.10.01-15',pb,trace:S.trace};
+  let rec={id:Date.now()+'-'+Math.random(),at:new Date().toISOString(),mode:S.mode,jp:S.item[0],reading:S.item[1],reason,seconds:+sec.toFixed(2),readyMs:S.armedAt?Math.max(0,Math.round(S.startAt-S.armedAt)):0,wpm:+m.wpm.toFixed(2),score:Math.round(m.score),accuracy:+m.acc.toFixed(2),correct:S.correct,attempts:S.attempts,misses:S.miss,cstats:S.cstats,pstats:S.pstats,weak:wk,wpmMetric:'keys-per-minute',build:'r2026.10.01-16',pb,trace:S.trace};
   a.push(rec);save(a);$('#status').textContent='記録済み';$('#stop').disabled=true;showResult(rec);refresh()
 }
 function advice(s){let t=settings().target;if(s.accuracy<90)return'速度を落として、次は正確率95%以上を優先しましょう。';if(s.accuracy<96)return'速度は保ちつつ、ミスが出た文字列だけ丁寧に通す練習がおすすめです。';if(s.wpm<t)return'正確率は十分です。次は文章の少し先を読む意識で、精度を保ったまま速度を上げましょう。';return'速度と正確率のバランスが良好です。次は長文で後半まで同じリズムを維持できるか確認しましょう。'}
@@ -657,42 +659,62 @@ $('#restore').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let d=
 $('#reset').onclick=()=>{if(confirm('練習履歴をすべて削除します。元に戻せません。')){localStorage.removeItem(K);refresh();reset(true);toast('履歴を削除しました')}};
 
 
-function acceptsReading(reading,input){
+function streamAcceptsReading(reading,input){
   const toks=buildTokens(reading);
-  const memo=new Map();
-  function dfs(ti,pos){
-    const key=ti+':'+pos;if(memo.has(key))return memo.get(key);
-    if(ti===toks.length)return pos===input.length;
-    for(const o of toks[ti].options){
-      if(input.startsWith(o,pos)&&dfs(ti+1,pos+o.length)){memo.set(key,true);return true}
+  let ti=0,prefix='';
+  function finalize(){prefix='';ti++;return ti>=toks.length?'finished':'continue'}
+  function push(k){
+    const t=toks[ti];if(!t)return false;
+    const ext=t.options.filter(o=>o.startsWith(prefix+k));
+    if(ext.length){
+      prefix+=k;
+      const exact=t.options.includes(prefix),longer=t.options.some(o=>o.startsWith(prefix)&&o.length>prefix.length);
+      if(exact&&!longer)finalize();
+      return true;
     }
-    memo.set(key,false);return false;
-  }
-  return dfs(0,0);
-}
-function romajiSelfTest(){
-  const cases=[
-    ['し','si'],['し','shi'],
-    ['つ','tu'],['つ','tsu'],
-    ['しゃ','sya'],['しゃ','sha'],['しゃ','sixya'],['しゃ','silya'],
-    ['しゅ','syu'],['しゅ','shu'],['しょ','syo'],['しょ','sho'],
-    ['ち','ti'],['ち','chi'],['ふ','hu'],['ふ','fu'],
-    ['きゃ','kya'],['きゃ','kixya'],['きゃ','kilya'],
-    ['じぇ','je'],['じぇ','zye'],['じぇ','jixe'],['じぇ','jile'],['じぇ','zixe'],['じぇ','zile'],
-    ['しぇ','she'],['しぇ','sye'],['ちぇ','che'],['ちぇ','tye'],
-    ['みんな','minna'],['こんにちは','konnitiha'],['しんかんせん','sinkansen'],
-    ['かんい','kanni'],['ほんや','honnya'],['ほんや',"hon'ya"]
-  ];
-  const failed=cases.filter(([r,i])=>!acceptsReading(r,i));
-  const el=$('#engineStatus');
-  if(failed.length){
-    el.textContent='ローマ字判定セルフテスト失敗: '+failed.map(x=>x.join('=')).join(', ');
-    el.style.color='#e04c59';
-    console.error('Romaji self test failed',failed);
+    if(t.options.includes(prefix)){
+      const r=finalize();if(r==='finished')return false;
+      return push(k);
+    }
     return false;
   }
-  el.textContent='ローマ字判定: si/shi・tu/tsu・sya/sha/sixya/silya 対応済み';
-  el.style.color='#13a36a';
+  for(const ch of input)if(!push(ch))return false;
+  return ti===toks.length;
+}
+function romajiSelfTest(){
+  const positives=[];
+  for(const[k,opts]of Object.entries(SIMPLE))for(const o of opts)positives.push([k,o]);
+  for(const[k,opts]of Object.entries(DIG))for(const o of opts)positives.push([k,o]);
+  positives.push(
+    ['っか','kka'],['っし','ssi'],['っし','sshi'],['っち','tti'],['っち','cchi'],
+    ['っつ','ttu'],['っつ','ttsu'],['っぷ','ppu'],['っきゃ','kkya'],
+    ['っか','xtuka'],['っか','ltuka'],['っし','xtusi'],['っし','ltushi'],
+    ['しんぶん','sinbun'],['さんま','sanma'],['しんかんせん','sinkansen'],
+    ['みんな','minnna'],['こんにちは','konnnitiha'],
+    ['かんい','kanni'],['かんい','kaxni'],['かんい',"kan'i"],
+    ['ほんや','honnya'],['ほんや','hoxnya'],['ほんや',"hon'ya"],
+    ['ほん','honn'],['ほん','hoxn'],['んな','nnna'],['んま','nma']
+  );
+  for(const it of SHORT_SENTENCE_POOL)positives.push([it[1],preferredRoma(it)]);
+  for(const it of WORDS)positives.push([it[1],preferredRoma(it)]);
+  const negatives=[
+    ['みんな','minna'],['こんにちは','konnitiha'],['かんい','kani'],
+    ['ほんや','honya'],['ほん','hon'],['んな','nna']
+  ];
+  const failedPositive=positives.filter(([r,i])=>!streamAcceptsReading(r,i));
+  const failedNegative=negatives.filter(([r,i])=>streamAcceptsReading(r,i));
+  const el=$('#engineStatus');
+  const total=positives.length+negatives.length;
+  if(failedPositive.length||failedNegative.length){
+    const details=[
+      ...failedPositive.slice(0,8).map(x=>'NG '+x.join('=')),
+      ...failedNegative.slice(0,8).map(x=>'誤受理 '+x.join('='))
+    ];
+    if(el){el.textContent='ローマ字判定セルフテスト失敗 ('+(failedPositive.length+failedNegative.length)+'件): '+details.join(', ');el.style.color='#e04c59'}
+    console.error('Romaji self test failed',{failedPositive,failedNegative});
+    return false;
+  }
+  if(el){el.textContent='ローマ字判定セルフテスト '+total+'件 PASS';el.style.color='#13a36a'}
   return true;
 }
 applySettings();setMode('sentence');refresh();romajiSelfTest();
