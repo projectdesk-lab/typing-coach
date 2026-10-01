@@ -689,7 +689,7 @@ function romajiSelfTest(){
     ['っか','kka'],['っし','ssi'],['っし','sshi'],['っち','tti'],['っち','cchi'],
     ['っつ','ttu'],['っつ','ttsu'],['っぷ','ppu'],['っきゃ','kkya'],
     ['っか','xtuka'],['っか','ltuka'],['っし','xtusi'],['っし','ltushi'],
-    ['しんぶん','sinbun'],['さんま','sanma'],['しんかんせん','sinkansen'],
+    ['しんぶん','sinbunn'],['しんぶんを','sinbunwo'],['さんま','sanma'],['しんかんせん','sinkansenn'],
     ['みんな','minnna'],['こんにちは','konnnitiha'],
     ['かんい','kanni'],['かんい','kaxni'],['かんい',"kan'i"],
     ['ほんや','honnya'],['ほんや','hoxnya'],['ほんや',"hon'ya"],
@@ -699,7 +699,7 @@ function romajiSelfTest(){
   for(const it of WORDS)positives.push([it[1],preferredRoma(it)]);
   const negatives=[
     ['みんな','minna'],['こんにちは','konnitiha'],['かんい','kani'],
-    ['ほんや','honya'],['ほん','hon'],['んな','nna']
+    ['ほんや','honya'],['ほん','hon'],['しんぶん','sinbun'],['んな','nna']
   ];
   const failedPositive=positives.filter(([r,i])=>!streamAcceptsReading(r,i));
   const failedNegative=negatives.filter(([r,i])=>streamAcceptsReading(r,i));
