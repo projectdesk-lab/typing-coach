@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="app">
-<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-4</span></div></header>
+<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-5</span></div></header>
 
 <main>
 <section class="view active" id="practice"><div class="grid">
@@ -21,7 +21,7 @@
 <div class="chips"><button class="chip active" data-mode="sentence">文章</button><button class="chip" data-mode="long">長文</button><button class="chip" data-mode="word">単語集中</button></div>
 <div class="row"><label>終了条件 <select id="endType"><option value="60" selected>60秒</option><option value="120">120秒</option><option value="300">5分</option><option value="endless">エンドレス（手動終了）</option><option value="passage">1文章を打ち切る</option></select></label><label><input id="focus" type="checkbox"> 集中モード</label><label><input id="randomMode" type="checkbox" checked> ランダム出題</label><button class="ghost" id="change">別の問題</button></div>
 <div class="stage" id="stage" tabindex="0"><div class="jp" id="jp"></div><div class="roma" id="roma"></div><div class="note" id="startNote">ここをクリック。日本語文章はスペースなしで入力し、最初のキー入力から計測します。</div><div class="flash" id="flash"></div></div>
-<div class="live" id="live"><div class="metric"><span>WPM <small style="font-weight:700">(5打鍵=1)</small></span><strong id="wpm">0.0</strong></div><div class="metric"><span>正確率</span><strong id="acc">100%</strong></div><div class="metric"><span>ミス</span><strong id="miss">0</strong></div><div class="metric"><span>経過</span><strong id="time">0.0秒</strong></div></div>
+<div class="live" id="live"><div class="metric"><span>WPM <small style="font-weight:700">(正しい打鍵/分)</small></span><strong id="wpm">0.0</strong></div><div class="metric"><span>正確率</span><strong id="acc">100%</strong></div><div class="metric"><span>ミス</span><strong id="miss">0</strong></div><div class="metric"><span>経過</span><strong id="time">0.0秒</strong></div></div>
 <div class="actions"><button class="btn" id="start">練習を開始</button><button class="ghost" id="stop" disabled>終了して記録</button></div></section>
 <aside class="card side"><p class="eyebrow">TODAY</p><h2>今日のおすすめ</h2><div class="box" id="rec"></div><hr><h3>現在の弱点</h3><div class="tags" id="weak"></div><h3 style="margin-top:22px">直近の目標</h3><div class="box" id="goal"></div></aside>
 </div></section>
@@ -32,7 +32,7 @@
 
 <section class="view" id="coach"><div class="two"><section class="card span2"><p class="eyebrow">COACH</p><h1>自動コーチ</h1><div class="coach" id="coachText"></div><div class="actions" style="margin-top:16px"><button class="btn" id="coachStart">おすすめ練習を始める</button><button class="ghost" id="copy">ChatGPT用データをコピー</button></div></section><section class="card"><h2>次の練習</h2><div id="plan"></div></section><section class="card"><h2>伸びている点</h2><div id="strength"></div></section><section class="card"><h2>注意する点</h2><div id="risk"></div></section><section class="card"><h2>分析対象</h2><p class="muted">直近10回を中心に、その前の10回と比較します。キー別・2文字連続のミス率と入力間隔も使います。</p></section></div></section>
 
-<section class="view" id="settings"><div class="two"><section class="card span2"><p class="eyebrow">SETTINGS</p><h1>設定</h1><label class="setting"><span><strong>日本語文を表示</strong><small>ローマ字の上に元の文章を表示します。</small></span><input type="checkbox" id="showJP" checked></label><label class="setting"><span><strong>練習中の数値を表示</strong><small>WPM・正確率・ミス数を表示します。</small></span><input type="checkbox" id="showLive" checked></label><label class="setting"><span><strong>ミス音</strong><small>誤入力した瞬間に短い音を鳴らします。</small></span><input type="checkbox" id="sound"></label><label class="setting"><span><strong>目標WPM</strong><small>自動コーチの基準に使います。</small></span><input type="number" id="target" min="20" max="250" step="5" value="80"></label></section><section class="card"><h2>データ</h2><div class="stack"><button class="ghost" id="backup">バックアップ(JSON)</button><label class="ghost" style="text-align:center;cursor:pointer">バックアップを復元<input type="file" id="restore" accept="application/json" hidden></label><button class="danger" id="reset">全履歴を削除</button></div></section><section class="card"><h2>AI連携</h2><p class="muted">今は追加料金なしの自動コーチで完結します。公開サービス化するときは、APIキーをブラウザに置かずサーバー側からAI APIを接続する想定です。</p></section></div></section>
+<section class="view" id="settings"><div class="two"><section class="card span2"><p class="eyebrow">SETTINGS</p><h1>設定</h1><label class="setting"><span><strong>日本語文を表示</strong><small>ローマ字の上に元の文章を表示します。</small></span><input type="checkbox" id="showJP" checked></label><label class="setting"><span><strong>練習中の数値を表示</strong><small>WPM・正確率・ミス数を表示します。</small></span><input type="checkbox" id="showLive" checked></label><label class="setting"><span><strong>ミス音</strong><small>誤入力した瞬間に短い音を鳴らします。</small></span><input type="checkbox" id="sound"></label><label class="setting"><span><strong>目標WPM</strong><small>自動コーチの基準に使います。</small></span><input type="number" id="target" min="50" max="1000" step="10" value="300"></label></section><section class="card"><h2>データ</h2><div class="stack"><button class="ghost" id="backup">バックアップ(JSON)</button><label class="ghost" style="text-align:center;cursor:pointer">バックアップを復元<input type="file" id="restore" accept="application/json" hidden></label><button class="danger" id="reset">全履歴を削除</button></div></section><section class="card"><h2>AI連携</h2><p class="muted">今は追加料金なしの自動コーチで完結します。公開サービス化するときは、APIキーをブラウザに置かずサーバー側からAI APIを接続する想定です。</p></section></div></section>
 </main>
 </div>
 <div class="modal" id="modal"><div class="modal-card"><p class="eyebrow">SESSION COMPLETE</p><h2>練習結果</h2><div class="modal-kpis" id="modalKpis"></div><div class="advice" id="advice"></div><div class="actions" style="margin-top:16px"><button class="btn" id="next">次のおすすめを練習</button><button class="ghost" id="result">結果を見る</button></div></div></div><div class="toast" id="toast"></div>
@@ -206,11 +206,31 @@ let S={mode:'sentence',item:null,tokens:[],ti:0,prefix:'',completed:'',recent:[]
 function migrate(){
   if(!localStorage.getItem(K)&&localStorage.getItem(OLDK))localStorage.setItem(K,localStorage.getItem(OLDK));
   if(!localStorage.getItem(SK)&&localStorage.getItem(OLDSK))localStorage.setItem(SK,localStorage.getItem(OLDSK));
+  try{
+    const a=JSON.parse(localStorage.getItem(K)||'[]');
+    let changed=false;
+    for(const s of a){
+      if(s&&s.wpmMetric!=='keys-per-minute'){
+        if(Number.isFinite(Number(s.wpm)))s.wpm=+(Number(s.wpm)*5).toFixed(2);
+        s.wpmMetric='keys-per-minute';
+        changed=true;
+      }
+    }
+    if(changed)localStorage.setItem(K,JSON.stringify(a));
+  }catch{}
+  try{
+    const s=JSON.parse(localStorage.getItem(SK)||'{}');
+    if(s.wpmMetric!=='keys-per-minute'){
+      if(Number.isFinite(Number(s.target)))s.target=Math.round(Number(s.target)*5);
+      s.wpmMetric='keys-per-minute';
+      localStorage.setItem(SK,JSON.stringify(s));
+    }
+  }catch{}
 }
 migrate();
 const sessions=()=>{try{return JSON.parse(localStorage.getItem(K)||'[]')}catch{return[]}};
 const save=x=>localStorage.setItem(K,JSON.stringify(x));
-const settings=()=>{try{return Object.assign({showJP:true,showLive:true,sound:false,target:80,random:true},JSON.parse(localStorage.getItem(SK)||'{}'))}catch{return{showJP:true,showLive:true,sound:false,target:80,random:true}}};
+const settings=()=>{try{return Object.assign({showJP:true,showLive:true,sound:false,target:300,random:true,wpmMetric:'keys-per-minute'},JSON.parse(localStorage.getItem(SK)||'{}'))}catch{return{showJP:true,showLive:true,sound:false,target:300,random:true,wpmMetric:'keys-per-minute'}}};
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function modeName(m){return({sentence:'文章',long:'長文',word:'単語'}[m]||m)}
@@ -359,7 +379,7 @@ function begin(){
   if(S.started)return;S.started=true;S.startAt=performance.now();S.lastAt=S.startAt;$('#status').textContent='練習中';$('#stop').disabled=false;$('#startNote').textContent='入力中…';
   S.timer=setInterval(()=>{let sec=(performance.now()-S.startAt)/1000;live(sec);if(S.limit&&sec>=S.limit)finish('time')},100)
 }
-function metric(sec){sec=Math.max(sec,.1);return{wpm:(S.correct/5)/(sec/60),acc:S.attempts?S.correct/S.attempts*100:100}}
+function metric(sec){sec=Math.max(sec,.1);return{wpm:S.correct/(sec/60),acc:S.attempts?S.correct/S.attempts*100:100}}
 function live(sec){let m=metric(sec);$('#wpm').textContent=m.wpm.toFixed(1);$('#acc').textContent=m.acc.toFixed(1)+'%';$('#miss').textContent=S.miss;$('#time').textContent=sec.toFixed(1)+'秒'}
 function st(obj,k){obj[k]??={c:0,m:0,l:[]};return obj[k]}
 function finalizeToken(){
@@ -410,7 +430,7 @@ function beep(){if(!$('#sound').checked)return;try{let a=new(window.AudioContext
 function finish(reason){
   if(S.finished||!S.started)return;S.finished=true;clearInterval(S.timer);
   let sec=(performance.now()-S.startAt)/1000,m=metric(sec),wk=Object.entries(S.cstats).map(([k,v])=>({k,r:v.m/(v.c+v.m||1),t:v.c+v.m})).filter(x=>x.t>=2).sort((a,b)=>b.r-a.r).slice(0,4).map(x=>x.k);
-  let rec={id:Date.now()+'-'+Math.random(),at:new Date().toISOString(),mode:S.mode,jp:S.item[0],reading:S.item[1],reason,seconds:+sec.toFixed(2),readyMs:S.armedAt?Math.max(0,Math.round(S.startAt-S.armedAt)):0,wpm:+m.wpm.toFixed(2),accuracy:+m.acc.toFixed(2),correct:S.correct,attempts:S.attempts,misses:S.miss,cstats:S.cstats,pstats:S.pstats,weak:wk};
+  let rec={id:Date.now()+'-'+Math.random(),at:new Date().toISOString(),mode:S.mode,jp:S.item[0],reading:S.item[1],reason,seconds:+sec.toFixed(2),readyMs:S.armedAt?Math.max(0,Math.round(S.startAt-S.armedAt)):0,wpm:+m.wpm.toFixed(2),accuracy:+m.acc.toFixed(2),correct:S.correct,attempts:S.attempts,misses:S.miss,cstats:S.cstats,pstats:S.pstats,weak:wk,wpmMetric:'keys-per-minute'};
   let a=sessions();a.push(rec);save(a);$('#status').textContent='記録済み';$('#stop').disabled=true;showResult(rec);refresh()
 }
 function advice(s){let t=settings().target;if(s.accuracy<90)return'速度を落として、次は正確率95%以上を優先しましょう。';if(s.accuracy<96)return'速度は保ちつつ、ミスが出た文字列だけ丁寧に通す練習がおすすめです。';if(s.wpm<t)return'正確率は十分です。次は文章の少し先を読む意識で、精度を保ったまま速度を上げましょう。';return'速度と正確率のバランスが良好です。次は長文で後半まで同じリズムを維持できるか確認しましょう。'}
@@ -461,7 +481,7 @@ function exportCSV(){let head=['日時','モード','WPM','正確率','ミス','
 function aiText(){let c=coach(),p={purpose:'タイピング練習の分析と次回練習アドバイス',recent:c.r.map(s=>({date:s.at,mode:s.mode,wpm:s.wpm,accuracy:s.accuracy,misses:s.misses,seconds:s.seconds,weak:s.weak})),weakestKeys:c.w.cv.slice(0,8).map(x=>({key:x.k,errorRate:+(x.e*100).toFixed(1),avgLatencyMs:Math.round(x.l||0)})),weakestPairs:c.w.pv.slice(0,8).map(x=>({pair:x.k,errorRate:+(x.e*100).toFixed(1),avgLatencyMs:Math.round(x.l||0)})),targetWpm:settings().target};return'以下はTyping Coachの自動記録です。傾向を分析し、次に改善すべき点を優先順位つきで説明してください。具体的な練習方法も提案してください。\n\n'+JSON.stringify(p,null,2)}
 async function copyAI(){let txt=aiText();try{await navigator.clipboard.writeText(txt);toast('ChatGPT用データをコピーしました')}catch{let ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('ChatGPT用データをコピーしました')}}
 function applySettings(){let s=settings();$('#showJP').checked=s.showJP;$('#showLive').checked=s.showLive;$('#sound').checked=s.sound;$('#target').value=s.target;if($('#randomMode'))$('#randomMode').checked=s.random!==false;$('#live').style.display=s.showLive?'grid':'none';render()}
-function saveSettings(){localStorage.setItem(SK,JSON.stringify({showJP:$('#showJP').checked,showLive:$('#showLive').checked,sound:$('#sound').checked,target:Number($('#target').value)||80,random:$('#randomMode')?$('#randomMode').checked:true}));applySettings();refresh()}
+function saveSettings(){localStorage.setItem(SK,JSON.stringify({showJP:$('#showJP').checked,showLive:$('#showLive').checked,sound:$('#sound').checked,target:Number($('#target').value)||300,random:$('#randomMode')?$('#randomMode').checked:true,wpmMetric:'keys-per-minute'}));applySettings();refresh()}
 
 $$('[data-nav]').forEach(b=>b.onclick=()=>nav(b.dataset.nav));
 $$('.chip').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
