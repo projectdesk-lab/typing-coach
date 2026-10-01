@@ -249,8 +249,9 @@ function aggregate(){
   }
   return{C,P}
 }
-function validWeakKey(k){return typeof k==='string'&&k.length===1&&!/\s/.test(k)}
-function validWeakPair(k){return typeof k==='string'&&k.length===2&&!/\s/.test(k)}
+function isPunctuationKey(k){return /[、。！？,.!?]/.test(k)}
+function validWeakKey(k){return typeof k==='string'&&k.length===1&&!/\s/.test(k)&&(settings().punctuation===true||!isPunctuationKey(k))}
+function validWeakPair(k){return typeof k==='string'&&k.length===2&&!/\s/.test(k)&&(settings().punctuation===true||!isPunctuationKey(k))}
 function weak(){
   const{C,P}=aggregate();
   const cv=Object.entries(C).filter(([k])=>validWeakKey(k)).map(([k,v])=>{let t=v.c+v.m,e=t?v.m/t:0,l=avg(v.l);return{k,t,e,l,score:e*100+Math.min(l/20,20)}}).filter(x=>x.t>=3).sort((a,b)=>b.score-a.score);
