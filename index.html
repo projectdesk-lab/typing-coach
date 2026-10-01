@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="app">
-<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-6</span></div></header>
+<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-7</span></div></header>
 
 <main>
 <section class="view active" id="practice"><div class="grid">
@@ -142,9 +142,9 @@ const SIMPLE={
 const DIG={
 'きゃ':['kya','kixya','kilya'],'きゅ':['kyu','kixyu','kilyu'],'きょ':['kyo','kixyo','kilyo'],
 'ぎゃ':['gya','gixya','gilya'],'ぎゅ':['gyu','gixyu','gilyu'],'ぎょ':['gyo','gixyo','gilyo'],
-'しゃ':['sya','sha','sixya','silya'],'しゅ':['syu','shu','sixyu','silyu'],'しょ':['syo','sho','sixyo','silyo'],
-'じゃ':['zya','ja','jya','zixya','zilya'],'じゅ':['zyu','ju','jyu','zixyu','zilyu'],'じょ':['zyo','jo','jyo','zixyo','zilyo'],
-'ちゃ':['tya','cha','cya','chya','tixya','tilya'],'ちゅ':['tyu','chu','cyu','chyu','tixyu','tilyu'],'ちょ':['tyo','cho','cyo','chyo','tixyo','tilyo'],
+'しゃ':['sya','sha','sixya','silya'],'しゅ':['syu','shu','sixyu','silyu'],'しょ':['syo','sho','sixyo','silyo'],'しぇ':['sye','she','sixe','sile'],
+'じゃ':['zya','ja','jya','zixya','zilya'],'じゅ':['zyu','ju','jyu','zixyu','zilyu'],'じょ':['zyo','jo','jyo','zixyo','zilyo'],'じぇ':['zye','je','jye','zixe','zile','jixe','jile'],
+'ちゃ':['tya','cha','cya','chya','tixya','tilya'],'ちゅ':['tyu','chu','cyu','chyu','tixyu','tilyu'],'ちょ':['tyo','cho','cyo','chyo','tixyo','tilyo'],'ちぇ':['tye','che','cye','chye','tixe','tile'],
 'ぢゃ':['dya','jya','ja','dixya','dilya'],'ぢゅ':['dyu','jyu','ju','dixyu','dilyu'],'ぢょ':['dyo','jyo','jo','dixyo','dilyo'],
 'にゃ':['nya','nixya','nilya'],'にゅ':['nyu','nixyu','nilyu'],'にょ':['nyo','nixyo','nilyo'],
 'ひゃ':['hya','hixya','hilya'],'ひゅ':['hyu','hixyu','hilyu'],'ひょ':['hyo','hixyo','hilyo'],
@@ -521,7 +521,9 @@ function romajiSelfTest(){
     ['しゃ','sya'],['しゃ','sha'],['しゃ','sixya'],['しゃ','silya'],
     ['しゅ','syu'],['しゅ','shu'],['しょ','syo'],['しょ','sho'],
     ['ち','ti'],['ち','chi'],['ふ','hu'],['ふ','fu'],
-    ['きゃ','kya'],['きゃ','kixya'],['きゃ','kilya']
+    ['きゃ','kya'],['きゃ','kixya'],['きゃ','kilya'],
+    ['じぇ','je'],['じぇ','zye'],['じぇ','jixe'],['じぇ','jile'],['じぇ','zixe'],['じぇ','zile'],
+    ['しぇ','she'],['しぇ','sye'],['ちぇ','che'],['ちぇ','tye']
   ];
   const failed=cases.filter(([r,i])=>!acceptsReading(r,i));
   const el=$('#engineStatus');
