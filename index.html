@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="app">
-<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-12</span></div></header>
+<header class="top"><button class="brand" data-nav="practice">⌨ Typing Coach</button><nav class="nav"><button class="active" data-nav="practice">練習</button><button data-nav="history">結果</button><button data-nav="growth">成長</button><button data-nav="coach">コーチ</button><button data-nav="settings">設定</button></nav><div class="topstat"><span id="topStat">0回 / Best --</span> <span id="buildVer" title="ローマ字判定エンジン">r2026.10.01-13</span></div></header>
 
 <main>
 <section class="view active" id="practice"><div class="grid">
@@ -195,9 +195,9 @@ function buildTokens(reading){
       if(!t.options.length)t.options=['xtu','ltu'];
     }
     if(t.n){
-      const first=next?[...new Set((next.options||[]).map(x=>x[0]))]:[];
-      const hard=first.some(x=>/[aiueoyn]/.test(x));
-      t.options=hard?['nn',"n'",'xn']:['n','nn',"n'",'xn'];
+      const nextKana=next?hira(next.kana||''):'';
+      const ambiguous=/^[あいうえおやゆよ]/.test(nextKana);
+      t.options=ambiguous?['nn',"n'",'xn']:['n','nn',"n'",'xn'];
     }
     t.options=[...new Set(t.options)];
     t.preferred=t.options[0];
@@ -598,7 +598,9 @@ function romajiSelfTest(){
     ['ち','ti'],['ち','chi'],['ふ','hu'],['ふ','fu'],
     ['きゃ','kya'],['きゃ','kixya'],['きゃ','kilya'],
     ['じぇ','je'],['じぇ','zye'],['じぇ','jixe'],['じぇ','jile'],['じぇ','zixe'],['じぇ','zile'],
-    ['しぇ','she'],['しぇ','sye'],['ちぇ','che'],['ちぇ','tye']
+    ['しぇ','she'],['しぇ','sye'],['ちぇ','che'],['ちぇ','tye'],
+    ['みんな','minna'],['こんにちは','konnitiha'],['しんかんせん','sinkansen'],
+    ['かんい','kanni'],['ほんや','honnya'],['ほんや',"hon'ya"]
   ];
   const failed=cases.filter(([r,i])=>!acceptsReading(r,i));
   const el=$('#engineStatus');
